@@ -1,0 +1,17 @@
+{
+    "name": "track_that_emp",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.18.2",
+        "fs": "^0.0.1-security",
+        "inquirer": "^8.2.4",
+        "jest": "^29.4.3"
+    }
+}
