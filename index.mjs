@@ -6,17 +6,26 @@ function runProgram() {
 };
 
 async function mainOptions() {
+  let quitSelected = false;
+  while (!quitSelected) {
   const answers = await inquirer.prompt([
     {
       type: 'list',
       name: 'main_questions',
       message: 'What would you like to do?',
-      choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit', 'View All Employees'],
+      choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit',],
     },
   ]);
 
 switch (answers.main_questions) {
   case 'View All Employees':
+    const query = 'SELECT * FROM employee';
+    //placeholder for database connection 
+    connection.query(query, (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      mainOptions();
+    });
     break;
 
   case 'Add Employee':
@@ -42,7 +51,9 @@ switch (answers.main_questions) {
     break;
 
   case 'Quit':
+    quitSelected = true;
     break;
+}
 }
 }  
 
@@ -75,7 +86,7 @@ function addNewEmployeeQuestion() {
     },
     {
       type: 'input',
-      name: 'new_empployee_fn',
+      name: 'new_empployee_ln',
       message: 'What is the employees last name?',
     },
     {
