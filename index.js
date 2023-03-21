@@ -68,13 +68,21 @@ switch (answers.main_questions) {
 }  
 
 function addDeptQuestion() {
-  inquirer.prompt([
-    {
-      type: 'input',
-      name: 'new_department',
-      message: 'What is the name of the department?',
-    },
-]);
+  inquirer.prompt([{
+    type: 'input',
+    message: "What department would you like to add?",
+    name: 'department'
+}
+]).then((data) => {
+    connection.query(`INSERT INTO department (department_name) VALUES ("${data.department}");`, function (err, result) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.table(result);
+            mainOptions();
+        }
+    })
+});
 }
 
 function viewAllRoles () {
@@ -108,30 +116,40 @@ function viewAllEmployee() {
 }
 
 async function addRoleQuestion() {
-  await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'title',
-      message: 'What is the role title?',
-    },
-    {
-      type: 'input',
-      name: 'salary',
-      message: 'What is the salary?',
-    },
-    {
-      type: 'input',
-      name: 'department',
-      message: 'What is the department id?',
-    },
-]).then(data => {
-  let query = `INSERT INTO role(title, salary, department_id) VALUES ('${data.title}','${data.salary}','${data.department}');`;
-
-  connection.query(query,(err, res) => {
-    if (err) throw err;
-      console.table(res);
-      mainOptions();
-  })
+  connection.query(`SELECT * FROM department;`, (err, result) => {
+    if (err) {
+        console.log(err);
+    }
+    let departmentArray = [];
+    for (let i = 0; i < result.length; i++) {
+        const d = result[i].department_name;
+        departmentArray.push(d)
+    }
+    inquirer.prompt([{
+        type: 'input',
+        message: "What role would you like to add?",
+        name: 'title'
+    }, {
+        type: 'input',
+        message: "What is the salary for this role?",
+        name: 'salary'
+    }, {
+        type: 'list',
+        message: "Which department does this role belong to?",
+        name: "department",
+        choices: departmentArray
+    }
+    ]).then((data) => {
+        let departmentID = departmentArray.indexOf(data.department) + 1;
+        connection.query(`INSERT INTO roles (title, salary, department_id) VALUES ("${data.title}", ${data.salary}, ${departmentID});`, function (err, result) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.table(result);
+                mainOptions();
+            }
+        })
+    });
 })
 }
 
