@@ -121,23 +121,21 @@ async function addRoleQuestion() {
     const result = await connection.promise().query(query);
     const data = result[0];
       // mainOptions();
+      const departmentArray = data.map(({ id, department_name }) => ({
+        name: department_name,
+        value: id
+      }));
 
-      let departmentArray = [];
-      for (let i = 0; i < data.length; i++) {
-          const d = data[i].department_name;
-          departmentArray.push(d)
-      }
       let queryRole = 'SELECT * FROM role';
         const roleResult = await connection.promise().query(queryRole);
         const roledata = roleResult[0];
         
-      let roleArray = [];
-      for (let i = 0; i < roledata.length; i++) {
-          const d = roledata[i].role_name;
-          roleArray.push(d)
-      }
+        const roleArray = roledata.map(({ title }) => ({
+          name: title,
+          value: title
+        }));
 
-      inquirer.prompt([{
+      const answers = await inquirer.prompt([{
                 type: 'list',
                 message: "What role would you like to add?",
                 name: 'title',
@@ -154,75 +152,71 @@ async function addRoleQuestion() {
             }
           ]);
 
+          // let departmentID = departmentArray.indexOf(data.department) + 1;
+          await connection.promise().query(`INSERT INTO role (title, salary, department_id) VALUES ("${answers.title}", ${answers.salary}, ${answers.department});`);
 
-          let departmentID = departmentArray.indexOf(data.department) + 1;
-          await connection.promise().query(`INSERT INTO roles (title, salary, department_id) VALUES ("${data.title}", ${data.salary}, ${departmentID});`);
+          mainOptions();
 }
 
 
 
-// async function addRoleQuestion() {
-//   // const result = await connection.promise().query(`SELECT * FROM department;`);
-    
-//     let departmentArray = [];
-//     // for (let i = 0; i < result.length; i++) {
-//     //     const d = result[i].department_name;
-//     //     departmentArray.push(d)
-//     // }
-//     inquirer.prompt([{
-//         type: 'input',
-//         message: "What role would you like to add?",
-//         name: 'title'
-//     }, {
-//         type: 'input',
-//         message: "What is the salary for this role?",
-//         name: 'salary'
-//     }, {
-//         type: 'list',
-//         message: "Which department does this role belong to?",
-//         name: "department",
-//         choices: departmentArray
-//     }
-//     ])
-//     // .then(async (data) => {
-//     //     let departmentID = departmentArray.indexOf(data.department) + 1;
-//     //     await connection.query(`INSERT INTO roles (title, salary, department_id) VALUES ("${data.title}", ${data.salary}, ${departmentID});`, function (err, result) {
-//     //         if (err) {
-//     //             console.log(err);
-//     //         } else {
-//     //             console.table(result);
-//     //             mainOptions();
-//     //         }
-//     //     })
-//     // });
-// }
 
-function addNewEmployeeQuestion() {
-  inquirer.prompt([
-    {
-      type: 'input',
-      name: 'new_empployee_fn',
-      message: 'What is the employees first name?',
-    },
-    {
-      type: 'input',
-      name: 'new_empployee_ln',
-      message: 'What is the employees last name?',
-    },
-    {
-      type: 'list',
-      name: 'new_employee_role',
-      message: 'What is the employees role?',
-      choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Lawyer', 'Customer Service',],
-    },
-    {
-      type: 'list',
-      name: 'new_employees_manager',
-      message: 'Who is the employees manager?',
-      choices: ['John Doe', 'Mike Chan', 'Ashley Rodriguez', 'Kevin Tupik', 'Kunal Singh', 'Malia Brown', 'Sarah Lourd',],
-    },
-]);
-}
+async function addNewEmployeeQuestion() {
+
+      // let choiceArray = ['John Doe', 'Ashley Rodriguez', 'Kunal Singh', 'Sarah Lourd',];
+
+
+      let queryMan = 'SELECT * FROM employee';
+      const managerResult = await connection.promise().query(queryMan);
+      const managerData = managerResult[0];
+      
+      const managerArray = managerData.map(({ id, manager_id }) => ({
+        name: manager_id,
+        value: id
+      }));
+
+
+
+      let queryRole = 'SELECT * FROM role';
+      const roleResult = await connection.promise().query(queryRole);
+      const roledata = roleResult[0];
+      
+      const roleArray = roledata.map(({ id, title }) => ({
+        name: title,
+        value: id
+      }));
+
+
+      
+      const answers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'new_empployee_fn',
+        message: 'What is the employees first name?',
+      },
+      {
+        type: 'input',
+        name: 'new_empployee_ln',
+        message: 'What is the employees last name?',
+      },
+      {
+        type: 'list',
+        name: 'new_employee_role',
+        message: 'What is the employees role?',
+        choices: roleArray
+      },
+      {
+        type: 'list',
+        name: 'new_employees_manager',
+        message: 'Who is the employees manager?',
+        choices: managerArray
+      },
+      ]);
+
+  await connection.promise().query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${answers.new_empployee_fn}", "${answers.new_empployee_ln}", ${answers.new_employee_role}, ${answers.new_employees_manager});`);
+
+          mainOptions();
+  }
 
 function updateEmployeeRoleQuestion() {
   inquirer.prompt([
