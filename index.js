@@ -27,7 +27,7 @@ async function mainOptions() {
       type: 'list',
       name: 'main_questions',
       message: 'What would you like to do?',
-      choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit',],
+      choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
     },
   ]);
 
@@ -62,7 +62,7 @@ switch (answers.main_questions) {
     break;
 
   case 'Quit':
-    quitSelected = true;
+    process.exit(0);
     break;
 }
 }
@@ -162,19 +162,15 @@ async function addRoleQuestion() {
 
 
 async function addNewEmployeeQuestion() {
-
       // let choiceArray = ['John Doe', 'Ashley Rodriguez', 'Kunal Singh', 'Sarah Lourd',];
-
-
       let queryMan = 'SELECT * FROM employee';
       const managerResult = await connection.promise().query(queryMan);
       const managerData = managerResult[0];
       
-      const managerArray = managerData.map(({ id, manager_id }) => ({
-        name: manager_id,
+      const managerArray = managerData.map(({ first_name, last_name, id }) => ({
+        name: `${first_name} ${last_name}`,
         value: id
       }));
-
 
 
       let queryRole = 'SELECT * FROM role';
@@ -186,8 +182,6 @@ async function addNewEmployeeQuestion() {
         value: id
       }));
 
-
-      
       const answers = await inquirer.prompt([
       {
         type: 'input',
@@ -212,27 +206,51 @@ async function addNewEmployeeQuestion() {
         choices: managerArray
       },
       ]);
+      console.log(answers)
 
   await connection.promise().query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${answers.new_empployee_fn}", "${answers.new_empployee_ln}", ${answers.new_employee_role}, ${answers.new_employees_manager});`);
 
           mainOptions();
   }
 
-function updateEmployeeRoleQuestion() {
-  inquirer.prompt([
+async function updateEmployeeRoleQuestion() {
+  let queryRole = 'SELECT * FROM role';
+      const roleResult = await connection.promise().query(queryRole);
+      const roledata = roleResult[0];
+      
+      const roleArray = roledata.map(({ id, title }) => ({
+        name: title,
+        value: id
+      }));
+
+      let queryEmp = 'SELECT * FROM employee';
+      const empResult = await connection.promise().query(queryEmp);
+      const empData = empResult[0];
+      
+      const empArray = empData.map(({ first_name, last_name, id }) => ({
+        name: `${first_name} ${last_name}`,
+        value: id
+      }));
+
+
+  const answers = await inquirer.prompt([
     {
       type: 'list',
       name: 'employee_for_role_update',
       message: 'Which employees role do you want to update?',
-      choices: ['John Doe', 'Mike Chan', 'Ashley Rodriguez', 'Kevin Tupik', 'Kunal Singh', 'Malia Brown', 'Sarah Lourd',],
+      choices: empArray
     },
     {
       type: 'list',
       name: 'updated_employee_role',
       message: 'Which role do you want to assign the selected employee?',
-      choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Lawyer', 'Customer Service',],
+      choices: roleArray
     },
 ]);
+
+await connection.promise().query(`UPDATE employee SET role_id = ${answers.updated_employee_role} WHERE id = ${answers.employee_for_role_update};`)
+
+  mainOptions();
 }
 
 runProgram();
