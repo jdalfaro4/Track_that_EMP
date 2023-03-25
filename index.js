@@ -1,5 +1,6 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
+const cTable = require('console.table');
 
 
 const connection = mysql.createConnection(
@@ -20,7 +21,6 @@ function runProgram() {
 };
 
 async function mainOptions() {
-  let quitSelected = false;
 
   const answers = await inquirer.prompt([
     {
@@ -49,7 +49,6 @@ switch (answers.main_questions) {
     break;
 
   case 'Add Role':
-    debugger
     addRoleQuestion();
     break;
 
